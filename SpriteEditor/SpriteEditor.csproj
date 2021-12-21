@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DynamicData" Version="7.4.3" />
+    <PackageReference Include="ReactiveUI" Version="17.1.9" />
+    <PackageReference Include="ReactiveUI.Fody" Version="17.1.9" />
+    <PackageReference Include="ReactiveUI.WPF" Version="17.1.9" />
+  </ItemGroup>
+
+</Project>
