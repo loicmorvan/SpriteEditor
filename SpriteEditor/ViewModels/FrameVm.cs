@@ -1,6 +1,7 @@
 ﻿using ReactiveUI;
 using SpriteEditor.Services;
 using System;
+using System.Drawing;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -17,10 +18,13 @@ namespace SpriteEditor.ViewModels
             MoveLeft = ReactiveCommand.Create(() => MoveHorizontallyHandler(-1));
             MoveRight = ReactiveCommand.Create(() => MoveHorizontallyHandler(1));
 
-            writeableBitmap = new WriteableBitmap(new BitmapImage(new Uri(path)));
+            using var bmp = new Bitmap(path);
+            writeableBitmap = new WriteableBitmap(bmp.Width, bmp.Height, 96, 96, PixelFormats.Bgra32, null);
+            var data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            writeableBitmap.WritePixels(new System.Windows.Int32Rect(0, 0, bmp.Width, bmp.Height), data.Scan0, 4 * bmp.Width * bmp.Height, 4 * bmp.Width, 0, 0);
 
             Image = writeableBitmap;
-            this.imageServices=imageServices;
+            this.imageServices = imageServices;
         }
 
         private void MoveHorizontallyHandler(int pixelDisplacement)

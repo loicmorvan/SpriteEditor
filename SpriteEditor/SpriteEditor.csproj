@@ -10,8 +10,8 @@
   <ItemGroup>
     <PackageReference Include="DynamicData" Version="7.4.3" />
     <PackageReference Include="ReactiveUI" Version="17.1.9" />
-    <PackageReference Include="ReactiveUI.Fody" Version="17.1.9" />
     <PackageReference Include="ReactiveUI.WPF" Version="17.1.9" />
+    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
   </ItemGroup>
 
 </Project>

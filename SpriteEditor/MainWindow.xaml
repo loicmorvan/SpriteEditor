@@ -47,7 +47,6 @@
 
             <Button Grid.Row="1" Command="{Binding CurrentFrame.MoveLeft}">Move left</Button>
             <Image Grid.Column="1" Grid.Row="1" Source="{Binding CurrentFrame.Image}" />
-            <Image Grid.Column="1" Grid.Row="1" Source="{Binding TransparencyFrame.Image}" Opacity="0.5" />
             <Button Grid.Row="1" Grid.Column="2" Command="{Binding CurrentFrame.MoveRight}">Move right</Button>
         </Grid>
     </Grid>
