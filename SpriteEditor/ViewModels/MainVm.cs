@@ -1,53 +1,64 @@
 ﻿using DynamicData;
 using Microsoft.Win32;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using SpriteEditor.Services;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Windows.Input;
 
-namespace SpriteEditor.ViewModels
+namespace SpriteEditor.ViewModels;
+
+internal class MainVm : ReactiveObject, IMainVm
 {
-    internal class MainVm : IMainVm
+    private readonly ObservableCollection<IFrameVm> frames = new();
+    private readonly ObservableAsPropertyHelper<IFrameVm?> transparencyFrameProperty;
+
+    public MainVm()
     {
-        private readonly ObservableCollection<IFrameVm> frames = new();
+        OpenFrames = ReactiveCommand.Create(OpenFramesHandlerAsync);
 
-        private IFrameVm currentFrame = new DefaultFrameVm();
+        frames.Add(CurrentFrame);
 
-        public MainVm()
+        transparencyFrameProperty =
+            this.WhenAnyValue(x => x.CurrentFrame)
+                .Select(x =>
+                {
+                    if (frames.Count == 0)
+                    {
+                        return null;
+                    }
+
+                    return frames[(frames.IndexOf(x) + 1) % frames.Count];
+                })
+                .ToProperty(this, x => x.TransparencyFrame, (IFrameVm?)null);
+    }
+
+    public ICommand OpenFrames { get; }
+
+    public ObservableCollection<IFrameVm> Frames => frames;
+
+    [Reactive]
+    public IFrameVm CurrentFrame { get; set; } = new DefaultFrameVm();
+
+    public IFrameVm? TransparencyFrame => transparencyFrameProperty.Value;
+
+    [Reactive]
+    public bool DisplayTransparencyFrame { get; set; }
+
+    private void OpenFramesHandlerAsync()
+    {
+        var window = new OpenFileDialog
         {
-            OpenFrames = ReactiveCommand.Create(OpenFramesHandlerAsync);
-        }
+            Filter = "Images|*.png",
+            Multiselect = true,
+        };
 
-        public ICommand OpenFrames { get; }
-
-        public ObservableCollection<IFrameVm> Frames => frames;
-
-        public IFrameVm CurrentFrame
+        if (window.ShowDialog() == true)
         {
-            get => currentFrame;
-            set
-            {
-                currentFrame = value;
-                TransparencyFrame = frames[(frames.IndexOf(value) + 1) % frames.Count];
-            }
-        }
-
-        public IFrameVm? TransparencyFrame { get; private set; }
-
-        private void OpenFramesHandlerAsync()
-        {
-            var window = new OpenFileDialog
-            {
-                Filter = "Images|*.png",
-                Multiselect = true,
-            };
-
-            if (window.ShowDialog() == true)
-            {
-                frames.Clear();
-                frames.AddRange(window.FileNames.Select(x => new FrameVm(x, new ImageServices())));
-            }
+            frames.Clear();
+            frames.AddRange(window.FileNames.Select(x => new FrameVm(x, new ImageServices())));
         }
     }
 }

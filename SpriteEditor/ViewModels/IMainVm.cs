@@ -12,5 +12,7 @@ namespace SpriteEditor.ViewModels
         IFrameVm CurrentFrame { get; set; }
 
         IFrameVm? TransparencyFrame { get; }
+
+        bool DisplayTransparencyFrame { get; set; }
     }
 }
