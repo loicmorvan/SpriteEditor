@@ -22,15 +22,17 @@ internal class MainVm : ReactiveObject, IMainVm
         frames.Add(CurrentFrame);
 
         transparencyFrameProperty =
-            this.WhenAnyValue(x => x.CurrentFrame)
+            this.WhenAnyValue(x => x.CurrentFrame, x => x.DisplayTransparencyFrame)
                 .Select(x =>
                 {
-                    if (frames.Count == 0)
+                    var (frame, displayTransparencyFrame) = x;
+
+                    if (frames.Count == 0 || !displayTransparencyFrame)
                     {
                         return null;
                     }
 
-                    return frames[(frames.IndexOf(x) + 1) % frames.Count];
+                    return frames[(frames.IndexOf(frame) + 1) % frames.Count];
                 })
                 .ToProperty(this, x => x.TransparencyFrame, (IFrameVm?)null);
     }
