@@ -3,21 +3,26 @@ using Microsoft.Win32;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SpriteEditor.Services;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows.Input;
 
 namespace SpriteEditor.ViewModels;
 
-internal class MainVm : ReactiveObject, IMainVm
+internal class MainVm : ReactiveObject, IMainVm, IDisposable
 {
     private readonly ObservableCollection<IFrameVm> frames = new();
     private readonly ObservableAsPropertyHelper<IFrameVm?> transparencyFrameProperty;
+    private readonly ObservableAsPropertyHelper<IFrameVm?> animationFrameProperty;
+    private readonly CompositeDisposable disposable = new();
 
     public MainVm()
     {
-        OpenFrames = ReactiveCommand.Create(OpenFramesHandlerAsync);
+        OpenFrames = ReactiveCommand.Create(OpenFramesHandlerAsync)
+            .DisposeWith(disposable);
 
         frames.Add(CurrentFrame);
 
@@ -34,7 +39,27 @@ internal class MainVm : ReactiveObject, IMainVm
 
                     return frames[(frames.IndexOf(frame) + 1) % frames.Count];
                 })
-                .ToProperty(this, x => x.TransparencyFrame, (IFrameVm?)null);
+                .ToProperty(this, x => x.TransparencyFrame, (IFrameVm?)null)
+                .DisposeWith(disposable);
+
+        animationFrameProperty = Observable.Timer(DateTimeOffset.Now, TimeSpan.FromMilliseconds(32))
+            .Select(_ => AnimationFrame)
+            .Select(frame =>
+            {
+                if (frames.Count == 0)
+                {
+                    return null;
+                }
+
+                if (frame == null)
+                {
+                    return frames[0];
+                }
+
+                return frames[(frames.IndexOf(frame) + 1) % frames.Count];
+            })
+            .ToProperty(this, x => x.AnimationFrame)
+            .DisposeWith(disposable);
     }
 
     public ICommand OpenFrames { get; }
@@ -48,6 +73,13 @@ internal class MainVm : ReactiveObject, IMainVm
 
     [Reactive]
     public bool DisplayTransparencyFrame { get; set; }
+
+    public IFrameVm? AnimationFrame => animationFrameProperty.Value;
+
+    public void Dispose()
+    {
+        disposable.Dispose();
+    }
 
     private void OpenFramesHandlerAsync()
     {

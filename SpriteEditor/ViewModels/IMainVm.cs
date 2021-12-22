@@ -14,5 +14,7 @@ namespace SpriteEditor.ViewModels
         IFrameVm? TransparencyFrame { get; }
 
         bool DisplayTransparencyFrame { get; set; }
+
+        IFrameVm? AnimationFrame { get; }
     }
 }
