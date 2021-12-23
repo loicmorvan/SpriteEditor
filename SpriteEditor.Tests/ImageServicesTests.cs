@@ -12,68 +12,44 @@ public class ImageServicesTests
         {
             yield return new object[]
             {
-                new uint[] { 0, 1, 2, 3 },
-                -4,
-                new uint[] { 0, 1, 2, 3 }
-            };
-            yield return new object[]
-            {
-                new uint[] { 0, 1, 2, 3 },
-                -3,
-                new uint[] { 3, 0, 1, 2 }
-            };
-            yield return new object[]
-            {
-                new uint[] { 0, 1, 2, 3 },
+                new Image(new uint[] { 0, 1, 2, 3 }, 2, 2),
                 -2,
-                new uint[] { 2, 3, 0, 1 }
+                new Image(new uint[] { 0, 1, 2, 3 }, 2, 2),
             };
             yield return new object[]
             {
-                new uint[] { 0, 1, 2, 3 },
+                new Image(new uint[] { 0, 1, 2, 3 }, 2, 2),
                 -1,
-                new uint[] { 1, 2, 3, 0 }
+                new Image(new uint[] { 1, 0, 3, 2 }, 2, 2),
             };
             yield return new object[]
             {
-                new uint[] { 0, 1, 2, 3 },
+                new Image(new uint[] { 0, 1, 2, 3 }, 2, 2),
                 0,
-                new uint[] { 0, 1, 2, 3 }
+                new Image(new uint[] { 0, 1, 2, 3 }, 2, 2),
             };
             yield return new object[]
             {
-                new uint[] { 0, 1, 2, 3 },
+                new Image(new uint[] { 0, 1, 2, 3 }, 2, 2),
                 1,
-                new uint[] { 3, 0, 1, 2 }
+                new Image(new uint[] { 1, 0, 3, 2 }, 2, 2),
             };
             yield return new object[]
             {
-                new uint[] { 0, 1, 2, 3 },
+                new Image(new uint[] { 0, 1, 2, 3 }, 2, 2),
                 2,
-                new uint[] { 2, 3, 0, 1 }
-            };
-            yield return new object[]
-            {
-                new uint[] { 0, 1, 2, 3 },
-                3,
-                new uint[] { 1, 2, 3, 0 }
-            };
-            yield return new object[]
-            {
-                new uint[] { 0, 1, 2, 3 },
-                4,
-                new uint[] { 0, 1, 2, 3 }
+                new Image(new uint[] { 0, 1, 2, 3 }, 2, 2),
             };
         }
     }
 
     [Theory]
     [MemberData(nameof(Data))]
-    public void Test1(uint[] input, int translation, uint[] expected)
+    public void Test1(Image input, int translation, Image expected)
     {
         var sut = new ImageServices();
 
-        var result = sut.MovePixelsHorizontally(translation, input);
+        var result = sut.MovePixels(new Vector(translation, 0), input);
 
         Assert.Equal(expected, result);
     }
