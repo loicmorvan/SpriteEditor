@@ -2,6 +2,6 @@
 {
     internal interface IImageServices
     {
-        uint[] MovePixels(int pixelDisplacement, uint[] temp);
+        Image MovePixels(Vector displacement, Image image);
     }
 }

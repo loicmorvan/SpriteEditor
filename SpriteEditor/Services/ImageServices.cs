@@ -4,15 +4,21 @@ namespace SpriteEditor.Services;
 
 internal class ImageServices : IImageServices
 {
-    public uint[] MovePixels(int pixelDisplacement, uint[] temp)
+    public Image MovePixels(Vector displacement, Image input)
     {
-        var newPixels = new uint[temp.Length];
+        var newPixels = new uint[input.Pixels.Length];
 
-        for (int i = 0; i < temp.Length; i++)
+        for (int x = 0; x < input.Width; ++x)
         {
-            newPixels[i] = temp[Mod(i - pixelDisplacement, temp.Length)];
+            for (int y = 0; y < input.Height; ++y)
+            {
+                int i = x + y * input.Width;
+                int i2 = Mod(x - displacement.X, input.Width) + Mod(y - displacement.Y, input.Height) * input.Width;
+
+                newPixels[i] = input.Pixels[i2];
+            }
         }
 
-        return newPixels;
+        return new(newPixels, input.Width, input.Height);
     }
 }

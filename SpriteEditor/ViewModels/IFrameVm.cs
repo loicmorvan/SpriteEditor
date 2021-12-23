@@ -9,5 +9,7 @@ namespace SpriteEditor.ViewModels
 
         ICommand MoveLeft { get; }
         ICommand MoveRight { get; }
+        ICommand MoveUp { get; }
+        ICommand MoveDown { get; }
     }
 }

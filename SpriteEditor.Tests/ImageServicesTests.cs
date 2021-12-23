@@ -73,7 +73,7 @@ public class ImageServicesTests
     {
         var sut = new ImageServices();
 
-        var result = sut.MovePixels(translation, input);
+        var result = sut.MovePixelsHorizontally(translation, input);
 
         Assert.Equal(expected, result);
     }

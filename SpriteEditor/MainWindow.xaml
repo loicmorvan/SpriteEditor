@@ -34,7 +34,7 @@
         <ListView Grid.Row="2" ItemsSource="{Binding Frames}" SelectedItem="{Binding CurrentFrame}">
             <ListView.ItemTemplate>
                 <DataTemplate DataType="{x:Type vm:IFrameVm}">
-                    <Image Width="32" Height="32" Source="{Binding Image}" RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                    <Image Source="{Binding Image}" RenderOptions.BitmapScalingMode="NearestNeighbor" />
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
@@ -50,10 +50,12 @@
                 <RowDefinition />
             </Grid.RowDefinitions>
 
+            <Button Grid.Row="0" Grid.Column="1" Command="{Binding CurrentFrame.MoveUp}">Move up</Button>
             <Button Grid.Row="1" Command="{Binding CurrentFrame.MoveLeft}">Move left</Button>
             <Image Grid.Column="1" Grid.Row="1" Opacity="0.5" Source="{Binding TransparencyFrame.Image}" RenderOptions.BitmapScalingMode="NearestNeighbor" />
             <Image Grid.Column="1" Grid.Row="1" Source="{Binding CurrentFrame.Image}" RenderOptions.BitmapScalingMode="NearestNeighbor" />
             <Button Grid.Row="1" Grid.Column="2" Command="{Binding CurrentFrame.MoveRight}">Move right</Button>
+            <Button Grid.Row="2" Grid.Column="1" Command="{Binding CurrentFrame.MoveDown}">Move down</Button>
         </Grid>
         <Image Grid.Row="3" Source="{Binding AnimationFrame.Image}" RenderOptions.BitmapScalingMode="NearestNeighbor" />
     </Grid>
