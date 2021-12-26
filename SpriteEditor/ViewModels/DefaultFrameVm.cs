@@ -1,4 +1,5 @@
 ﻿using ReactiveUI;
+using SpriteEditor.Foundation;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -9,10 +10,11 @@ namespace SpriteEditor.ViewModels
     {
         public DefaultFrameVm()
         {
-            MoveLeft = ReactiveCommand.Create(() => { });
-            MoveRight = ReactiveCommand.Create(() => { });
-            MoveUp = ReactiveCommand.Create(() => { });
-            MoveDown = ReactiveCommand.Create(() => { });
+            MoveLeft = new VoidCommand();
+            MoveRight = new VoidCommand();
+            MoveUp = new VoidCommand();
+            MoveDown = new VoidCommand();
+            Save = new VoidCommand();
 
             var writeableBitmap = new WriteableBitmap(2, 2, 96, 96, PixelFormats.Bgra32, null);
             writeableBitmap.WritePixels(
@@ -32,5 +34,7 @@ namespace SpriteEditor.ViewModels
         public ICommand MoveUp { get; }
 
         public ICommand MoveDown { get; }
+
+        public ICommand Save { get; }
     }
 }

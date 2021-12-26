@@ -16,5 +16,7 @@ namespace SpriteEditor.ViewModels
         bool DisplayTransparencyFrame { get; set; }
 
         IFrameVm? AnimationFrame { get; }
+
+        ICommand SaveAll { get; }
     }
 }

@@ -22,6 +22,7 @@
         <Menu Grid.ColumnSpan="2">
             <MenuItem Header="File">
                 <MenuItem Header="Open frames..." Command="{Binding OpenFrames}" />
+                <MenuItem Header="Save all" Command="{Binding SaveAll}" />
             </MenuItem>
             <MenuItem Header="Edit"></MenuItem>
             <MenuItem Header="Help">

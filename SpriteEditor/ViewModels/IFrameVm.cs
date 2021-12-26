@@ -11,5 +11,7 @@ namespace SpriteEditor.ViewModels
         ICommand MoveRight { get; }
         ICommand MoveUp { get; }
         ICommand MoveDown { get; }
+
+        ICommand Save { get; }
     }
 }

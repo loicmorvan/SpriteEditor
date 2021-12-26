@@ -1,4 +1,6 @@
-﻿using static SpriteEditor.Foundation.MathHelper;
+﻿using System;
+using System.Drawing;
+using static SpriteEditor.Foundation.MathHelper;
 
 namespace SpriteEditor.Services;
 
@@ -20,5 +22,21 @@ internal class ImageServices : IImageServices
         }
 
         return new(newPixels, input.Width, input.Height);
+    }
+
+    public unsafe void Save(string path, Image image)
+    {
+        var bitmap = new Bitmap(image.Width, image.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        var data = bitmap.LockBits(new Rectangle(0, 0, image.Width, image.Height), System.Drawing.Imaging.ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+        var sizeInBytes = 4 * image.Width*image.Height;
+        fixed (uint* sourcePtr = &image.Pixels[0])
+        {
+            Buffer.MemoryCopy(sourcePtr, (void*)data.Scan0, sizeInBytes, sizeInBytes);
+        }
+        
+        bitmap.UnlockBits(data);
+
+        bitmap.Save(path);
     }
 }

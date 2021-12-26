@@ -26,6 +26,15 @@ namespace SpriteEditor.ViewModels
 
             Image = writeableBitmap;
             this.imageServices = imageServices;
+
+            Save = ReactiveCommand.Create(() =>
+            {
+                var temp = new uint[writeableBitmap.PixelHeight * writeableBitmap.PixelWidth];
+                writeableBitmap.CopyPixels(temp, 4 * writeableBitmap.PixelWidth, 0);
+                var image = new Services.Image(temp, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight);
+
+                imageServices.Save(path, image);
+            });
         }
 
         private void MovePixelsHandler(Vector vector)
@@ -49,5 +58,7 @@ namespace SpriteEditor.ViewModels
         public ICommand MoveUp { get; }
 
         public ICommand MoveDown { get; }
+
+        public ICommand Save { get; }
     }
 }

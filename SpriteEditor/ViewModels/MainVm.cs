@@ -60,6 +60,18 @@ internal class MainVm : ReactiveObject, IMainVm, IDisposable
             })
             .ToProperty(this, x => x.AnimationFrame)
             .DisposeWith(disposable);
+
+        SaveAll = ReactiveCommand.Create(() =>
+                    {
+                        foreach (var frame in frames)
+                        {
+                            if (frame.Save.CanExecute(null))
+                            {
+                                frame.Save.Execute(null);
+                            }
+                        }
+                    })
+                    .DisposeWith(disposable);
     }
 
     public ICommand OpenFrames { get; }
@@ -75,6 +87,8 @@ internal class MainVm : ReactiveObject, IMainVm, IDisposable
     public bool DisplayTransparencyFrame { get; set; }
 
     public IFrameVm? AnimationFrame => animationFrameProperty.Value;
+
+    public ICommand SaveAll { get; }
 
     public void Dispose()
     {
