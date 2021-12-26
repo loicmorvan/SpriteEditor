@@ -1,55 +1,79 @@
 ﻿using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using SpriteEditor.Services;
-using System.Drawing;
+using System;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Image = SpriteEditor.Services.Image;
 
 namespace SpriteEditor.ViewModels
 {
-    internal class FrameVm : IFrameVm
+    internal class FrameVm : ReactiveObject, IFrameVm, IDisposable
     {
-        private readonly WriteableBitmap writeableBitmap;
-        private readonly IImageServices imageServices;
+        private readonly CompositeDisposable disposable;
 
-        public FrameVm(string path, IImageServices imageServices)
+        private readonly ObservableAsPropertyHelper<ImageSource> imageProperty;
+
+        public unsafe FrameVm(string path)
         {
-            MoveLeft = ReactiveCommand.Create(() => MovePixelsHandler(new Vector(-1, 0)));
-            MoveRight = ReactiveCommand.Create(() => MovePixelsHandler(new Vector(1, 0)));
-            MoveUp = ReactiveCommand.Create(() => MovePixelsHandler(new Vector(0, -1)));
-            MoveDown = ReactiveCommand.Create(() => MovePixelsHandler(new Vector(0, 1)));
+            disposable = new CompositeDisposable();
 
-            using var bmp = new Bitmap(path);
-            writeableBitmap = new WriteableBitmap(bmp.Width, bmp.Height, 96, 96, PixelFormats.Bgra32, null);
-            var data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            writeableBitmap.WritePixels(new System.Windows.Int32Rect(0, 0, bmp.Width, bmp.Height), data.Scan0, 4 * bmp.Width * bmp.Height, 4 * bmp.Width, 0, 0);
+            MoveLeft = ReactiveCommand
+                .Create(() => MovePixelsHandler(new Vector(-1, 0)))
+                .DisposeWith(disposable);
 
-            Image = writeableBitmap;
-            this.imageServices = imageServices;
+            MoveRight = ReactiveCommand
+                .Create(() => MovePixelsHandler(new Vector(1, 0)))
+                .DisposeWith(disposable);
 
-            Save = ReactiveCommand.Create(() =>
-            {
-                var temp = new uint[writeableBitmap.PixelHeight * writeableBitmap.PixelWidth];
-                writeableBitmap.CopyPixels(temp, 4 * writeableBitmap.PixelWidth, 0);
-                var image = new Services.Image(temp, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight);
+            MoveUp = ReactiveCommand
+                .Create(() => MovePixelsHandler(new Vector(0, -1)))
+                .DisposeWith(disposable);
 
-                imageServices.Save(path, image);
-            });
+            MoveDown = ReactiveCommand
+                .Create(() => MovePixelsHandler(new Vector(0, 1)))
+                .DisposeWith(disposable);
+
+            imageProperty = this
+                .WhenAnyValue(x => x.InternalImage)
+                .Select(x =>
+                {
+                    if (x == null)
+                    {
+                        return ImageSourceEx.CreateDefault();
+                    }
+
+                    var writeableBitmap = new WriteableBitmap(x.Width, x.Height, 96, 96, PixelFormats.Bgra32, null);
+                    writeableBitmap.WritePixels(new System.Windows.Int32Rect(0, 0, x.Width, x.Height), x.Pixels, 4 * x.Width, 0, 0);
+                    return writeableBitmap;
+                })
+                .ToProperty(this, x => x.Image, ImageSourceEx.CreateDefault())
+                .DisposeWith(disposable);
+
+            InternalImage = new Image(path);
+
+            Save = ReactiveCommand
+                .Create(() => InternalImage.Save(path))
+                .DisposeWith(disposable);
         }
+
+        [Reactive]
+        private Image InternalImage { get; set; }
 
         private void MovePixelsHandler(Vector vector)
         {
-            var temp = new uint[writeableBitmap.PixelHeight * writeableBitmap.PixelWidth];
-            writeableBitmap.CopyPixels(temp, 4 * writeableBitmap.PixelWidth, 0);
-
-            var output = imageServices.MovePixels(vector, new Services.Image(temp, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight));
-
-            writeableBitmap.WritePixels(
-                new System.Windows.Int32Rect(0, 0, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight),
-                output.Pixels, 4 * writeableBitmap.PixelWidth, 0, 0);
+            InternalImage = InternalImage.MovePixels(vector);
         }
 
-        public ImageSource Image { get; }
+        public void Dispose()
+        {
+            disposable.Dispose();
+        }
+
+        public ImageSource Image => imageProperty.Value;
 
         public ICommand MoveLeft { get; }
 

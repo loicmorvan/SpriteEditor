@@ -106,7 +106,7 @@ internal class MainVm : ReactiveObject, IMainVm, IDisposable
         if (window.ShowDialog() == true)
         {
             frames.Clear();
-            frames.AddRange(window.FileNames.Select(x => new FrameVm(x, new ImageServices())));
+            frames.AddRange(window.FileNames.Select(x => new FrameVm(x)));
         }
     }
 }

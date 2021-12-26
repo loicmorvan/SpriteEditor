@@ -47,9 +47,7 @@ public class ImageServicesTests
     [MemberData(nameof(Data))]
     public void Test1(Image input, int translation, Image expected)
     {
-        var sut = new ImageServices();
-
-        var result = sut.MovePixels(new Vector(translation, 0), input);
+        var result = input.MovePixels(new Vector(translation, 0));
 
         Assert.Equal(expected, result);
     }
