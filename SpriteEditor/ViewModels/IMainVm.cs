@@ -7,7 +7,7 @@ namespace SpriteEditor.ViewModels
     {
         public ICommand OpenFrames { get; }
 
-        ObservableCollection<IFrameVm> Frames { get; }
+        ReadOnlyObservableCollection<IFrameVm> Frames { get; }
 
         IFrameVm CurrentFrame { get; set; }
 

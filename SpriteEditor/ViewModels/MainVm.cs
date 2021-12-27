@@ -2,7 +2,6 @@
 using Microsoft.Win32;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
-using SpriteEditor.Services;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -14,69 +13,68 @@ namespace SpriteEditor.ViewModels;
 
 internal class MainVm : ReactiveObject, IMainVm, IDisposable
 {
-    private readonly ObservableCollection<IFrameVm> frames = new();
+    private readonly CompositeDisposable disposable = new();
+    private readonly SourceList<IFrameVm> frames = new();
+
     private readonly ObservableAsPropertyHelper<IFrameVm?> transparencyFrameProperty;
     private readonly ObservableAsPropertyHelper<IFrameVm?> animationFrameProperty;
-    private readonly CompositeDisposable disposable = new();
+    private readonly ReadOnlyObservableCollection<IFrameVm> observable;
 
     public MainVm()
     {
-        OpenFrames = ReactiveCommand.Create(OpenFramesHandlerAsync)
+        OpenFrames = ReactiveCommand
+            .Create(OpenFramesHandler)
             .DisposeWith(disposable);
 
-        frames.Add(CurrentFrame);
+        frames.Connect()
+              .DisposeMany()
+              .Bind(out observable)
+              .Subscribe()
+              .DisposeWith(disposable);
 
         transparencyFrameProperty =
             this.WhenAnyValue(x => x.CurrentFrame, x => x.DisplayTransparencyFrame)
-                .Select(x =>
-                {
-                    var (frame, displayTransparencyFrame) = x;
-
-                    if (frames.Count == 0 || !displayTransparencyFrame)
-                    {
-                        return null;
-                    }
-
-                    return frames[(frames.IndexOf(frame) + 1) % frames.Count];
-                })
+                .Select(x => x.Item2 ? NextFrame(x.Item1) : null)
                 .ToProperty(this, x => x.TransparencyFrame, (IFrameVm?)null)
                 .DisposeWith(disposable);
 
         animationFrameProperty = Observable.Timer(DateTimeOffset.Now, TimeSpan.FromMilliseconds(32))
-            .Select(_ => AnimationFrame)
-            .Select(frame =>
-            {
-                if (frames.Count == 0)
-                {
-                    return null;
-                }
-
-                if (frame == null)
-                {
-                    return frames[0];
-                }
-
-                return frames[(frames.IndexOf(frame) + 1) % frames.Count];
-            })
+            .Select(_ => NextFrame(AnimationFrame))
             .ToProperty(this, x => x.AnimationFrame)
             .DisposeWith(disposable);
 
-        SaveAll = ReactiveCommand.Create(() =>
+        SaveAll = ReactiveCommand
+            .Create(() =>
+            {
+                foreach (var command in observable.Select(x => x.Save))
+                {
+                    if (command.CanExecute(null))
                     {
-                        foreach (var frame in frames)
-                        {
-                            if (frame.Save.CanExecute(null))
-                            {
-                                frame.Save.Execute(null);
-                            }
-                        }
-                    })
-                    .DisposeWith(disposable);
+                        command.Execute(null);
+                    }
+                }
+            })
+            .DisposeWith(disposable);
+    }
+
+    private IFrameVm? NextFrame(IFrameVm? frame)
+    {
+        if (observable.Count == 0)
+        {
+            return null;
+        }
+
+        if (frame == null)
+        {
+            return observable[0];
+        }
+
+        return observable[(observable.IndexOf(frame) + 1) % observable.Count];
     }
 
     public ICommand OpenFrames { get; }
 
-    public ObservableCollection<IFrameVm> Frames => frames;
+    public ReadOnlyObservableCollection<IFrameVm> Frames => observable;
 
     [Reactive]
     public IFrameVm CurrentFrame { get; set; } = new DefaultFrameVm();
@@ -95,7 +93,7 @@ internal class MainVm : ReactiveObject, IMainVm, IDisposable
         disposable.Dispose();
     }
 
-    private void OpenFramesHandlerAsync()
+    private void OpenFramesHandler()
     {
         var window = new OpenFileDialog
         {

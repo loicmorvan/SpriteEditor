@@ -37,23 +37,18 @@ namespace SpriteEditor.ViewModels
                 .Create(() => MovePixelsHandler(new Vector(0, 1)))
                 .DisposeWith(disposable);
 
+            InternalImage = new Image(path);
+
             imageProperty = this
                 .WhenAnyValue(x => x.InternalImage)
                 .Select(x =>
                 {
-                    if (x == null)
-                    {
-                        return ImageSourceEx.CreateDefault();
-                    }
-
                     var writeableBitmap = new WriteableBitmap(x.Width, x.Height, 96, 96, PixelFormats.Bgra32, null);
                     writeableBitmap.WritePixels(new System.Windows.Int32Rect(0, 0, x.Width, x.Height), x.Pixels, 4 * x.Width, 0, 0);
                     return writeableBitmap;
                 })
                 .ToProperty(this, x => x.Image, ImageSourceEx.CreateDefault())
                 .DisposeWith(disposable);
-
-            InternalImage = new Image(path);
 
             Save = ReactiveCommand
                 .Create(() => InternalImage.Save(path))
