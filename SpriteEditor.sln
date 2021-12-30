@@ -5,7 +5,11 @@ VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpriteEditor", "SpriteEditor\SpriteEditor.csproj", "{A3D59CB8-B3EF-410F-900B-D5E7B7667744}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpriteEditor.Tests", "SpriteEditor.Tests\SpriteEditor.Tests.csproj", "{DEC6EB3D-7E29-4343-A158-FCE359249847}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpriteEditor.Tests", "SpriteEditor.Tests\SpriteEditor.Tests.csproj", "{DEC6EB3D-7E29-4343-A158-FCE359249847}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpriteCutter", "SpriteCutter\SpriteCutter.csproj", "{8CE32D8D-51AD-45EF-BA07-201D9BA44A4A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpriteCommon", "SpriteCommon\SpriteCommon.csproj", "{C8AA92AD-46C7-440F-86AC-AF8E169B39EF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +25,14 @@ Global
 		{DEC6EB3D-7E29-4343-A158-FCE359249847}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DEC6EB3D-7E29-4343-A158-FCE359249847}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DEC6EB3D-7E29-4343-A158-FCE359249847}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8CE32D8D-51AD-45EF-BA07-201D9BA44A4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8CE32D8D-51AD-45EF-BA07-201D9BA44A4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8CE32D8D-51AD-45EF-BA07-201D9BA44A4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8CE32D8D-51AD-45EF-BA07-201D9BA44A4A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8AA92AD-46C7-440F-86AC-AF8E169B39EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8AA92AD-46C7-440F-86AC-AF8E169B39EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8AA92AD-46C7-440F-86AC-AF8E169B39EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8AA92AD-46C7-440F-86AC-AF8E169B39EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

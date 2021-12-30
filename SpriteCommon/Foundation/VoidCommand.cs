@@ -3,7 +3,7 @@ using System.Windows.Input;
 
 namespace SpriteEditor.Foundation
 {
-    internal class VoidCommand : ICommand
+    public class VoidCommand : ICommand
     {
         public event EventHandler? CanExecuteChanged
         {

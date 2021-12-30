@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 
 using static SpriteEditor.Foundation.MathHelper;
@@ -14,7 +15,10 @@ namespace SpriteEditor.Services
             Width = bmp.Width;
             Height = bmp.Height;
 
-            var data = bmp.LockBits(new Rectangle(0, 0, Width, Height), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            var data = bmp.LockBits(
+                new Rectangle(0, 0, Width, Height),
+                ImageLockMode.ReadOnly,
+                PixelFormat.Format32bppArgb);
 
             var sizeInBytes = 4 * Width * Height;
             Pixels = new uint[sizeInBytes];
@@ -57,8 +61,8 @@ namespace SpriteEditor.Services
 
         public unsafe void Save(string path)
         {
-            using var bitmap = new Bitmap(Width, Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            var data = bitmap.LockBits(new Rectangle(0, 0, Width, Height), System.Drawing.Imaging.ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            using var bitmap = new Bitmap(Width, Height, PixelFormat.Format32bppArgb);
+            var data = bitmap.LockBits(new Rectangle(0, 0, Width, Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
 
             var sizeInBytes = 4 * Width * Height;
             fixed (uint* sourcePtr = &Pixels[0])

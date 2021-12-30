@@ -1,6 +1,6 @@
 ﻿namespace SpriteEditor.Foundation
 {
-    internal static class MathHelper
+    public static class MathHelper
     {
         public static int Mod(int value, int divisor)
         {
