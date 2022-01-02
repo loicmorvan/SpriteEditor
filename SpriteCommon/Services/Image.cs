@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
@@ -91,6 +92,36 @@ namespace SpriteEditor.Services
             }
 
             return new(newPixels, Width, Height);
+        }
+
+        public IEnumerable<Image> Split(int columns, int rows)
+        {
+            var size = new Vector(Width / columns, Height / rows);
+            for (var x = 0; x < columns; ++x)
+            {
+                for (var y = 0; y < rows; ++y)
+                {
+                    yield return Cut(new Vector(size.X * x, size.Y * y), size);
+                }
+            }
+        }
+
+        public Image Cut(Vector topLeft, Vector size)
+        {
+            var newPixels = new uint[size.X * size.Y];
+
+            for (int x = 0; x < size.X; ++x)
+            {
+                for (int y = 0; y < size.Y; ++y)
+                {
+                    int i = x + y * size.X;
+                    int i2 = Mod(x + topLeft.X, size.X) + Mod(y + topLeft.Y, size.Y) * size.X;
+
+                    newPixels[i] = Pixels[i2];
+                }
+            }
+
+            return new(newPixels, size.X, size.Y);
         }
     }
 }

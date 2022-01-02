@@ -1,7 +1,17 @@
-﻿namespace SpriteCutter
+﻿using System.Windows.Media;
+
+namespace SpriteCutter
 {
     internal interface IImageVm
     {
-        string? FileName { get; }
+        ImageSource Source { get; }
+
+        ImageSource[] Animation { get; }
+
+        int ColumnCount { get; }
+
+        int RowCount { get; }
+
+        ImageSource? AnimationFrame { get; }
     }
 }

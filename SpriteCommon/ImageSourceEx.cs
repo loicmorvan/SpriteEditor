@@ -3,7 +3,7 @@ using System.Windows.Media.Imaging;
 
 namespace SpriteEditor.ViewModels
 {
-    internal static class ImageSourceEx
+    public static class ImageSourceEx
     {
         public static ImageSource CreateDefault()
         {

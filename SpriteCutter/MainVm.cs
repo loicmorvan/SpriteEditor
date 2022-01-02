@@ -1,10 +1,11 @@
 ﻿using Microsoft.Win32;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using System.Windows.Input;
 
 namespace SpriteCutter
 {
-    internal class MainVm : IMainVm
+    internal class MainVm : ReactiveObject, IMainVm
     {
         public MainVm()
         {
@@ -14,6 +15,7 @@ namespace SpriteCutter
 
         public ICommand OpenImage { get; }
 
+        [Reactive]
         public IImageVm Image { get; private set; }
 
         private void OpenImageHandler()
