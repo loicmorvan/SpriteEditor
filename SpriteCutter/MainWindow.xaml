@@ -38,7 +38,9 @@
             <TextBox Text="{Binding Image.ColumnCount}" />
             <TextBlock>Rows</TextBlock>
             <TextBox Text="{Binding Image.RowCount}" />
-            <Image Source="{Binding Image.AnimationFrame}" />
+            <TextBlock>Frame rate</TextBlock>
+            <TextBox Text="{Binding Image.AnimationFrameRate}" />
+            <Image Source="{Binding Image.AnimationFrame}" RenderOptions.BitmapScalingMode="NearestNeighbor" />
         </StackPanel>
     </Grid>
 </Window>

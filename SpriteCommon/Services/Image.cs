@@ -44,7 +44,8 @@ namespace SpriteEditor.Services
 
         public bool Equals(Image? other)
         {
-            return other != null &&
+            return
+                other != null &&
                 other.Width == Width &&
                 other.Height == Height &&
                 other.Pixels.SequenceEqual(Pixels);
@@ -97,9 +98,9 @@ namespace SpriteEditor.Services
         public IEnumerable<Image> Split(int columns, int rows)
         {
             var size = new Vector(Width / columns, Height / rows);
-            for (var x = 0; x < columns; ++x)
+            for (var y = 0; y < rows; ++y)
             {
-                for (var y = 0; y < rows; ++y)
+                for (var x = 0; x < columns; ++x)
                 {
                     yield return Cut(new Vector(size.X * x, size.Y * y), size);
                 }
@@ -114,10 +115,10 @@ namespace SpriteEditor.Services
             {
                 for (int y = 0; y < size.Y; ++y)
                 {
-                    int i = x + y * size.X;
-                    int i2 = Mod(x + topLeft.X, size.X) + Mod(y + topLeft.Y, size.Y) * size.X;
+                    int newIndex = x + y * size.X;
+                    int sourceIndex = x + topLeft.X + (y + topLeft.Y) * Width;
 
-                    newPixels[i] = Pixels[i2];
+                    newPixels[newIndex] = Pixels[sourceIndex];
                 }
             }
 

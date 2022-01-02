@@ -16,7 +16,7 @@ namespace SpriteCutter
     {
         private readonly CompositeDisposable disposable = new();
         private readonly ObservableAsPropertyHelper<ImageSource[]> animationProperty;
-        private readonly ObservableAsPropertyHelper<ImageSource?> animationFrameProperty;
+        private ObservableAsPropertyHelper<ImageSource?> animationFrameProperty;
         private readonly ObservableAsPropertyHelper<ImageSource> sourceProperty;
 
         public ImageVm(string? safeFileName = null)
@@ -36,11 +36,17 @@ namespace SpriteCutter
                 .ToProperty(this, x => x.Animation)
                 .DisposeWith(disposable);
 
-            animationFrameProperty = Observable.Timer(DateTimeOffset.Now, TimeSpan.FromMilliseconds(32))
-                .Select(_ => NextImage(AnimationFrame))
-                .ToProperty(this, x => x.AnimationFrame)
+            this.WhenAnyValue(x => x.AnimationFrameRate)
+                .Do(animationFrameRate =>
+                {
+                    animationFrameProperty?.Dispose();
+                    animationFrameProperty = Observable.Timer(DateTimeOffset.Now, TimeSpan.FromSeconds(1f / animationFrameRate))
+                        .Select(_ => NextImage(AnimationFrame))
+                        .ToProperty(this, x => x.AnimationFrame)
+                        .DisposeWith(disposable);
+                })
+                .Subscribe()
                 .DisposeWith(disposable);
-
         }
 
         private ImageSource? NextImage(ImageSource? image)
@@ -79,5 +85,8 @@ namespace SpriteCutter
 
         [Reactive]
         public int RowCount { get; set; } = 1;
+
+        [Reactive]
+        public int AnimationFrameRate { get; set; } = 30;
     }
 }

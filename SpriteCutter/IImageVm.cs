@@ -12,6 +12,8 @@ namespace SpriteCutter
 
         int RowCount { get; }
 
+        int AnimationFrameRate { get; set; }
+
         ImageSource? AnimationFrame { get; }
     }
 }
