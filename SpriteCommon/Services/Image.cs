@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
-
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using static SpriteEditor.Foundation.MathHelper;
 
 namespace SpriteEditor.Services
@@ -19,7 +20,7 @@ namespace SpriteEditor.Services
             var data = bmp.LockBits(
                 new Rectangle(0, 0, Width, Height),
                 ImageLockMode.ReadOnly,
-                PixelFormat.Format32bppArgb);
+                System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 
             var sizeInBytes = 4 * Width * Height;
             Pixels = new uint[sizeInBytes];
@@ -63,8 +64,8 @@ namespace SpriteEditor.Services
 
         public unsafe void Save(string path)
         {
-            using var bitmap = new Bitmap(Width, Height, PixelFormat.Format32bppArgb);
-            var data = bitmap.LockBits(new Rectangle(0, 0, Width, Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+            using var bitmap = new Bitmap(Width, Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            var data = bitmap.LockBits(new Rectangle(0, 0, Width, Height), ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 
             var sizeInBytes = 4 * Width * Height;
             fixed (uint* sourcePtr = &Pixels[0])
@@ -123,6 +124,13 @@ namespace SpriteEditor.Services
             }
 
             return new(newPixels, size.X, size.Y);
+        }
+
+        public ImageSource CreateSource()
+        {
+            var writeableBitmap = new WriteableBitmap(Width, Height, 96, 96, PixelFormats.Bgra32, null);
+            writeableBitmap.WritePixels(new System.Windows.Int32Rect(0, 0, Width, Height), Pixels, 4 * Width, 0, 0);
+            return writeableBitmap;
         }
     }
 }

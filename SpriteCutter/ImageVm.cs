@@ -8,15 +8,14 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 namespace SpriteCutter
 {
-    internal class ImageVm : ReactiveObject, IImageVm
+    internal class ImageVm : ReactiveObject, IImageVm, IDisposable
     {
         private readonly CompositeDisposable disposable = new();
         private readonly ObservableAsPropertyHelper<ImageSource[]> animationProperty;
-        private ObservableAsPropertyHelper<ImageSource?> animationFrameProperty;
+        private ObservableAsPropertyHelper<ImageSource?>? animationFrameProperty;
         private readonly ObservableAsPropertyHelper<ImageSource> sourceProperty;
 
         public ImageVm(string? safeFileName = null)
@@ -27,12 +26,12 @@ namespace SpriteCutter
 
             sourceProperty = this
                 .WhenAnyValue(x => x.InternalImage)
-                .Select(CreateSource)
+                .Select(x => x.CreateSource())
                 .ToProperty(this, x => x.Source, ImageSourceEx.CreateDefault())
                 .DisposeWith(disposable);
 
             animationProperty = this.WhenAnyValue(x => x.InternalImage, x => x.ColumnCount, x => x.RowCount)
-                .Select(x => x.Item1.Split(x.Item2, x.Item3).Select(CreateSource).Cast<ImageSource>().ToArray())
+                .Select(x => x.Item1.Split(x.Item2, x.Item3).Select(x => x.CreateSource()).ToArray())
                 .ToProperty(this, x => x.Animation)
                 .DisposeWith(disposable);
 
@@ -64,11 +63,9 @@ namespace SpriteCutter
             return Animation[(Animation.IndexOf(image) + 1) % Animation.Length];
         }
 
-        private static WriteableBitmap CreateSource(Image image)
+        public void Dispose()
         {
-            var writeableBitmap = new WriteableBitmap(image.Width, image.Height, 96, 96, PixelFormats.Bgra32, null);
-            writeableBitmap.WritePixels(new System.Windows.Int32Rect(0, 0, image.Width, image.Height), image.Pixels, 4 * image.Width, 0, 0);
-            return writeableBitmap;
+            disposable.Dispose();
         }
 
         [Reactive]
@@ -78,7 +75,7 @@ namespace SpriteCutter
 
         public ImageSource[] Animation => animationProperty.Value;
 
-        public ImageSource? AnimationFrame => animationFrameProperty.Value;
+        public ImageSource? AnimationFrame => animationFrameProperty?.Value;
 
         [Reactive]
         public int ColumnCount { get; set; } = 1;
