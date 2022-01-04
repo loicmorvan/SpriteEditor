@@ -16,6 +16,7 @@ namespace Dedumper
     internal class MainVm : ReactiveObject, IMainVm
     {
         private readonly CompositeDisposable disposable = new();
+        private readonly ObservableAsPropertyHelper<Image> internalImageProperty;
         private readonly ObservableAsPropertyHelper<ImageSource> imageProperty;
         private int width = 50;
 
@@ -25,7 +26,7 @@ namespace Dedumper
                 .Create(OpenFileHandler)
                 .DisposeWith(disposable);
 
-            imageProperty =
+            internalImageProperty =
                 this.WhenAnyValue(x => x.Content, x => x.Width)
                     .Select(x =>
                     {
@@ -33,18 +34,30 @@ namespace Dedumper
 
                         if (content == null)
                         {
-                            return ImageSourceEx.CreateDefault();
+                            return SpriteEditor.Services.Image.CreateDefault();
                         }
 
                         var potentialPixelCount = content.Length / 4;
-                        var height = potentialPixelCount / width;
+                        var height = Math.Min(potentialPixelCount / width, 500);
                         var pixels = new uint[width * height];
                         Buffer.BlockCopy(content, 0, pixels, 0, 4 * width * height);
-                        var image = new Image(pixels, width, height);
-                        return image.CreateSource();
+                        return new Image(pixels, width, height);
+                    })
+                    .ToProperty(this, x => x.InternalImage, SpriteEditor.Services.Image.CreateDefault())
+                    .DisposeWith(disposable);
+
+            imageProperty =
+                this.WhenAnyValue(x => x.InternalImage, x => x.Zoom)
+                    .Select(x =>
+                    {
+                        var (image, zoom) = x;
+                        return image.CreateSource(zoom);
                     })
                     .ToProperty(this, x => x.Image, ImageSourceEx.CreateDefault())
                     .DisposeWith(disposable);
+
+            IncreaseWidth = ReactiveCommand.Create(() => Width += 1).DisposeWith(disposable);
+            DecreaseWidth = ReactiveCommand.Create(() => Width -= 1).DisposeWith(disposable);
         }
 
         private async Task OpenFileHandler()
@@ -73,11 +86,20 @@ namespace Dedumper
             get => width;
             set
             {
-                if (value > 0)
+                if (value > 4)
                 {
                     this.RaiseAndSetIfChanged(ref width, value);
                 }
             }
         }
+
+        public ICommand IncreaseWidth { get; }
+
+        public ICommand DecreaseWidth { get; }
+
+        [Reactive]
+        public decimal Zoom { get; set; } = 1;
+
+        private Image InternalImage => internalImageProperty.Value;
     }
 }

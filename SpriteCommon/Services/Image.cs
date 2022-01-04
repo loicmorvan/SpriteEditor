@@ -37,6 +37,11 @@ namespace SpriteEditor.Services
             Height = height;
         }
 
+        public static Image CreateDefault()
+        {
+            return new Image(new uint[] { 0xFFFF0000, 0xFF00FF00, 0xFF0000FF, 0xFFFFFFFF }, 2, 2);
+        }
+
         public uint[] Pixels { get; }
 
         public int Width { get; }
@@ -126,9 +131,9 @@ namespace SpriteEditor.Services
             return new(newPixels, size.X, size.Y);
         }
 
-        public ImageSource CreateSource()
+        public ImageSource CreateSource(decimal zoom = 1)
         {
-            var writeableBitmap = new WriteableBitmap(Width, Height, 96, 96, PixelFormats.Bgra32, null);
+            var writeableBitmap = new WriteableBitmap(Width, Height, (double)(96 / zoom), (double)(96 / zoom), PixelFormats.Bgra32, null);
             writeableBitmap.WritePixels(new System.Windows.Int32Rect(0, 0, Width, Height), Pixels, 4 * Width, 0, 0);
             return writeableBitmap;
         }

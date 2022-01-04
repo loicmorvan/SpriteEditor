@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
+using System.Windows.Input;
 
 namespace Dedumper
 {
@@ -7,11 +9,14 @@ namespace Dedumper
     /// </summary>
     public partial class MainWindow : Window
     {
+        private readonly IMainVm vm;
+
         public MainWindow()
         {
             InitializeComponent();
 
-            DataContext = new MainVm();
+            vm = new MainVm();
+            DataContext = vm;
         }
     }
 }

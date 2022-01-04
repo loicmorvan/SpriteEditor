@@ -28,9 +28,13 @@
                 <MenuItem Header="About" />
             </MenuItem>
         </Menu>
-        <Image Grid.Row="1" Source="{Binding Image}"></Image>
+        <ScrollViewer Grid.Row="1">
+            <Image Source="{Binding Image}" RenderOptions.BitmapScalingMode="NearestNeighbor" />
+        </ScrollViewer>
         <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Vertical">
             <TextBox Text="{Binding Width, UpdateSourceTrigger=PropertyChanged}" />
+            <Button Command="{Binding IncreaseWidth}">+</Button>
+            <Button Command="{Binding DecreaseWidth}">-</Button>
         </StackPanel>
     </Grid>
 </Window>

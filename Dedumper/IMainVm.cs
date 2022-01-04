@@ -10,5 +10,10 @@ namespace Dedumper
         ImageSource Image { get; }
 
         int Width { get; set; }
+
+        ICommand IncreaseWidth { get; }
+        ICommand DecreaseWidth { get; }
+
+        decimal Zoom { get; set; }
     }
 }
