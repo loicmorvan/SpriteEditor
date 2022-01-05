@@ -21,5 +21,9 @@ namespace Dedumper
         decimal Zoom { get; set; }
 
         SpriteEditor.Services.PixelFormat PixelFormat { get; set; }
+
+        Brush Background { get; }
+
+        ICommand ToggleBackground { get; }
     }
 }

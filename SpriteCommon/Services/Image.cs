@@ -32,10 +32,10 @@ namespace SpriteEditor.Services
                 Buffer.MemoryCopy((void*)data.Scan0, destPtr, sizeInBytes, sizeInBytes);
             }
 
-            pixelFormat = PixelFormat.Argb32;
+            pixelFormat = PixelFormat.Argb8888;
         }
 
-        public Image(byte[] pixels, int width, int height, PixelFormat pixelFormat = PixelFormat.Argb32)
+        public Image(byte[] pixels, int width, int height, PixelFormat pixelFormat = PixelFormat.Argb8888)
         {
             this.pixels = pixels;
             Width = width;
@@ -50,7 +50,7 @@ namespace SpriteEditor.Services
                 0x00, 0xFF, 0x00,
                 0xFF, 0x00, 0x00,
                 0xFF, 0xFF, 0xFF,
-            }, 2, 2, PixelFormat.Rgb24);
+            }, 2, 2, PixelFormat.Rgb888);
         }
 
         public int Width { get; }
@@ -83,9 +83,9 @@ namespace SpriteEditor.Services
             var data = bitmap.LockBits(
                 new Rectangle(0, 0, Width, Height),
                 ImageLockMode.WriteOnly,
-                ToDrawingImaging(pixelFormat));
+                pixelFormat.ToDrawingImaging());
 
-            var sizeInBytes = GetSizeInBytes(pixelFormat) * Width * Height;
+            var sizeInBytes = pixelFormat.GetSizeInBytes() * Width * Height;
             fixed (byte* sourcePtr = &pixels[0])
             {
                 Buffer.MemoryCopy(sourcePtr, (void*)data.Scan0, sizeInBytes, sizeInBytes);
@@ -107,9 +107,9 @@ namespace SpriteEditor.Services
                     int i = x + y * Width;
                     int i2 = Mod(x - displacement.X, Width) + Mod(y - displacement.Y, Height) * Width;
 
-                    for (int b = 0; b < GetSizeInBytes(pixelFormat); ++b)
+                    for (int b = 0; b < pixelFormat.GetSizeInBytes(); ++b)
                     {
-                        newPixels[i * GetSizeInBytes(pixelFormat) + b] = pixels[i2 * GetSizeInBytes(pixelFormat) + b];
+                        newPixels[i * pixelFormat.GetSizeInBytes() + b] = pixels[i2 * pixelFormat.GetSizeInBytes() + b];
                     }
                 }
             }
@@ -140,9 +140,9 @@ namespace SpriteEditor.Services
                     int newIndex = x + y * size.X;
                     int sourceIndex = x + topLeft.X + (y + topLeft.Y) * Width;
 
-                    for (int b = 0; b < GetSizeInBytes(pixelFormat); ++b)
+                    for (int b = 0; b < pixelFormat.GetSizeInBytes(); ++b)
                     {
-                        newPixels[newIndex * GetSizeInBytes(pixelFormat) + b] = pixels[sourceIndex * GetSizeInBytes(pixelFormat) + b];
+                        newPixels[newIndex * pixelFormat.GetSizeInBytes() + b] = pixels[sourceIndex * pixelFormat.GetSizeInBytes() + b];
                     }
                 }
             }
@@ -152,42 +152,50 @@ namespace SpriteEditor.Services
 
         public ImageSource CreateSource(decimal zoom = 1)
         {
-            var writeableBitmap = new WriteableBitmap(Width, Height, (double)(96 / zoom), (double)(96 / zoom), ToWinMedia(pixelFormat), null);
-            writeableBitmap.WritePixels(new System.Windows.Int32Rect(0, 0, Width, Height), pixels, GetSizeInBytes(pixelFormat) * Width, 0, 0);
+            var candidateFormat = pixelFormat switch
+            {
+                PixelFormat.Argb8888 => PixelFormats.Bgra32,
+                PixelFormat.Argb4444 => PixelFormats.Bgra32,
+                PixelFormat.Rgb888 => PixelFormats.Bgr24,
+                PixelFormat.Bgr888 => PixelFormats.Rgb24,
+                _ => throw new NotImplementedException(),
+            };
+
+            var writeableBitmap = new WriteableBitmap(Width, Height, (double)(96 / zoom), (double)(96 / zoom), candidateFormat, null);
+
+            var pixels = this.pixels;
+            if (pixelFormat == PixelFormat.Argb4444)
+            {
+                var realPixelCount = pixels.Length / 2;
+                var newPixels = new byte[4 * realPixelCount];
+                for (int i = 0; i < realPixelCount; i++)
+                {
+                    var r = (byte)(0xF0 & (pixels[2 * i + 0] << 4));
+                    var g = (byte)(0xF0 & pixels[2 * i + 0]);
+                    var b = (byte)(0xF0 & (pixels[2 * i + 1] << 4));
+                    var a = (byte)(0xF0 & pixels[2 * i + 1]);
+
+                    // TODO: Not sure.
+                    newPixels[4 * i + 0] = r;
+                    newPixels[4 * i + 1] = g;
+                    newPixels[4 * i + 2] = b;
+                    newPixels[4 * i + 3] = a;
+                }
+
+                pixels = newPixels;
+            }
+
+            var sizeInBytes = pixelFormat switch
+            {
+                PixelFormat.Argb8888 => 4,
+                PixelFormat.Rgb888 => 3,
+                PixelFormat.Bgr888 => 3,
+                PixelFormat.Argb4444 => 4,
+                _ => throw new NotImplementedException(),
+            };
+
+            writeableBitmap.WritePixels(new System.Windows.Int32Rect(0, 0, Width, Height), pixels, sizeInBytes * Width, 0, 0);
             return writeableBitmap;
-        }
-
-        private static System.Windows.Media.PixelFormat ToWinMedia(PixelFormat pixelFormat)
-        {
-            return pixelFormat switch
-            {
-                PixelFormat.Argb32 => PixelFormats.Bgra32,
-                PixelFormat.Rgb24 => PixelFormats.Bgr24,
-                PixelFormat.Bgr24 => PixelFormats.Rgb24,
-                _ => throw new NotImplementedException(),
-            };
-        }
-
-        private static System.Drawing.Imaging.PixelFormat ToDrawingImaging(PixelFormat pixelFormat)
-        {
-            return pixelFormat switch
-            {
-                PixelFormat.Argb32 => System.Drawing.Imaging.PixelFormat.Format32bppArgb,
-                PixelFormat.Rgb24 => System.Drawing.Imaging.PixelFormat.Format24bppRgb,
-                PixelFormat.Bgr24 => throw new NotSupportedException(),
-                _ => throw new NotImplementedException(),
-            };
-        }
-
-        public static int GetSizeInBytes(PixelFormat pixelFormat)
-        {
-            return pixelFormat switch
-            {
-                PixelFormat.Argb32 => 4,
-                PixelFormat.Rgb24 => 3,
-                PixelFormat.Bgr24 => 3,
-                _ => throw new NotImplementedException(),
-            };
         }
     }
 }

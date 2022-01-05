@@ -58,6 +58,18 @@ namespace Dedumper
 
             IncreaseWidth = ReactiveCommand.Create(() => Width += 1).DisposeWith(disposable);
             DecreaseWidth = ReactiveCommand.Create(() => Width -= 1).DisposeWith(disposable);
+
+            ToggleBackground = ReactiveCommand.Create(() =>
+            {
+                if (Background == Brushes.White)
+                {
+                    Background = Brushes.Black;
+                }
+                else
+                {
+                    Background = Brushes.White;
+                }
+            }).DisposeWith(disposable);
         }
 
         private static Image? CreateImage(byte[]? content, int offset, int width, SpriteEditor.Services.PixelFormat pixelFormat)
@@ -67,7 +79,7 @@ namespace Dedumper
                 return null;
             }
 
-            var pixelSizeInBytes = SpriteEditor.Services.Image.GetSizeInBytes(pixelFormat);
+            var pixelSizeInBytes = pixelFormat.GetSizeInBytes();
             var potentialPixelCount = content.Length / pixelSizeInBytes;
             var height = Math.Min(potentialPixelCount / width, 500);
             var offsetInBytes = offset * pixelSizeInBytes;
@@ -126,5 +138,10 @@ namespace Dedumper
         public int Offset { get; set; }
 
         public int Height => heightProperty.Value;
+
+        [Reactive]
+        public Brush Background { get; private set; } = Brushes.White;
+
+        public ICommand ToggleBackground { get; }
     }
 }

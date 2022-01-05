@@ -2,8 +2,10 @@
 {
     public enum PixelFormat
     {
-        Argb32,
-        Rgb24,
-        Bgr24
+        Argb8888,
+        Rgb888,
+        Rgb565,
+        Bgr888,
+        Argb4444,
     }
 }
