@@ -27,21 +27,23 @@ namespace Dedumper
                 .DisposeWith(disposable);
 
             internalImageProperty =
-                this.WhenAnyValue(x => x.Content, x => x.Width)
+                this.WhenAnyValue(x => x.Content, x => x.Width, x => x.PixelFormat)
                     .Select(x =>
                     {
-                        var (content, width) = x;
+                        var (content, width, pixelFormat) = x;
 
                         if (content == null)
                         {
                             return SpriteEditor.Services.Image.CreateDefault();
                         }
 
-                        var potentialPixelCount = content.Length / 4;
+                        var pixelSizeInBytes = SpriteEditor.Services.Image.GetSizeInBytes(pixelFormat);
+                        var potentialPixelCount = content.Length / pixelSizeInBytes;
                         var height = Math.Min(potentialPixelCount / width, 500);
-                        var pixels = new uint[width * height];
-                        Buffer.BlockCopy(content, 0, pixels, 0, 4 * width * height);
-                        return new Image(pixels, width, height);
+                        var sizeInBytes = pixelSizeInBytes * width * height;
+                        var pixels = new byte[sizeInBytes];
+                        Buffer.BlockCopy(content, 0, pixels, 0, sizeInBytes);
+                        return new Image(pixels, width, height, pixelFormat);
                     })
                     .ToProperty(this, x => x.InternalImage, SpriteEditor.Services.Image.CreateDefault())
                     .DisposeWith(disposable);
@@ -101,5 +103,8 @@ namespace Dedumper
         public decimal Zoom { get; set; } = 1;
 
         private Image InternalImage => internalImageProperty.Value;
+
+        [Reactive]
+        public SpriteEditor.Services.PixelFormat PixelFormat { get; set; }
     }
 }

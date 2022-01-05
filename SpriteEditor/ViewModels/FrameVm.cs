@@ -6,7 +6,6 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using Image = SpriteEditor.Services.Image;
 
 namespace SpriteEditor.ViewModels
@@ -41,12 +40,7 @@ namespace SpriteEditor.ViewModels
 
             imageProperty = this
                 .WhenAnyValue(x => x.InternalImage)
-                .Select(x =>
-                {
-                    var writeableBitmap = new WriteableBitmap(x.Width, x.Height, 96, 96, PixelFormats.Bgra32, null);
-                    writeableBitmap.WritePixels(new System.Windows.Int32Rect(0, 0, x.Width, x.Height), x.Pixels, 4 * x.Width, 0, 0);
-                    return writeableBitmap;
-                })
+                .Select(x => x.CreateSource())
                 .ToProperty(this, x => x.Image, ImageSourceEx.CreateDefault())
                 .DisposeWith(disposable);
 

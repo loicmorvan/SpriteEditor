@@ -11,6 +11,9 @@ namespace SpriteEditor.Services
 {
     public class Image : IEquatable<Image>
     {
+        private readonly PixelFormat pixelFormat;
+        private readonly byte[] pixels;
+
         public unsafe Image(string filepath)
         {
             using var bmp = new Bitmap(filepath);
@@ -23,26 +26,32 @@ namespace SpriteEditor.Services
                 System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 
             var sizeInBytes = 4 * Width * Height;
-            Pixels = new uint[sizeInBytes];
-            fixed (uint* destPtr = &Pixels[0])
+            pixels = new byte[sizeInBytes];
+            fixed (byte* destPtr = &pixels[0])
             {
                 Buffer.MemoryCopy((void*)data.Scan0, destPtr, sizeInBytes, sizeInBytes);
             }
+
+            pixelFormat = PixelFormat.Argb32;
         }
 
-        public Image(uint[] pixels, int width, int height)
+        public Image(byte[] pixels, int width, int height, PixelFormat pixelFormat = PixelFormat.Argb32)
         {
-            Pixels = pixels;
+            this.pixels = pixels;
             Width = width;
             Height = height;
+            this.pixelFormat = pixelFormat;
         }
 
         public static Image CreateDefault()
         {
-            return new Image(new uint[] { 0xFFFF0000, 0xFF00FF00, 0xFF0000FF, 0xFFFFFFFF }, 2, 2);
+            return new Image(new byte[] {
+                0xFF, 0xFF, 0x00, 0x00,
+                0xFF, 0x00, 0xFF, 0x00,
+                0xFF, 0x00, 0x00, 0xFF,
+                0xFF, 0xFF, 0xFF, 0xFF
+            }, 2, 2);
         }
-
-        public uint[] Pixels { get; }
 
         public int Width { get; }
 
@@ -54,7 +63,7 @@ namespace SpriteEditor.Services
                 other != null &&
                 other.Width == Width &&
                 other.Height == Height &&
-                other.Pixels.SequenceEqual(Pixels);
+                other.pixels.SequenceEqual(pixels);
         }
 
         public override bool Equals(object? obj)
@@ -64,16 +73,19 @@ namespace SpriteEditor.Services
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Width, Height, Pixels.GetHashCode());
+            return HashCode.Combine(Width, Height, pixels.GetHashCode());
         }
 
         public unsafe void Save(string path)
         {
             using var bitmap = new Bitmap(Width, Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            var data = bitmap.LockBits(new Rectangle(0, 0, Width, Height), ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            var data = bitmap.LockBits(
+                new Rectangle(0, 0, Width, Height),
+                ImageLockMode.WriteOnly,
+                ToDrawingImaging(pixelFormat));
 
-            var sizeInBytes = 4 * Width * Height;
-            fixed (uint* sourcePtr = &Pixels[0])
+            var sizeInBytes = GetSizeInBytes(pixelFormat) * Width * Height;
+            fixed (byte* sourcePtr = &pixels[0])
             {
                 Buffer.MemoryCopy(sourcePtr, (void*)data.Scan0, sizeInBytes, sizeInBytes);
             }
@@ -85,7 +97,9 @@ namespace SpriteEditor.Services
 
         public Image MovePixels(Vector displacement)
         {
-            var newPixels = new uint[Pixels.Length];
+            throw new NotImplementedException();
+
+            var newPixels = new byte[pixels.Length];
 
             for (int x = 0; x < Width; ++x)
             {
@@ -94,11 +108,11 @@ namespace SpriteEditor.Services
                     int i = x + y * Width;
                     int i2 = Mod(x - displacement.X, Width) + Mod(y - displacement.Y, Height) * Width;
 
-                    newPixels[i] = Pixels[i2];
+                    newPixels[i] = pixels[i2];
                 }
             }
 
-            return new(newPixels, Width, Height);
+            return new(newPixels, Width, Height, pixelFormat);
         }
 
         public IEnumerable<Image> Split(int columns, int rows)
@@ -115,7 +129,9 @@ namespace SpriteEditor.Services
 
         public Image Cut(Vector topLeft, Vector size)
         {
-            var newPixels = new uint[size.X * size.Y];
+            throw new NotImplementedException();
+
+            var newPixels = new byte[size.X * size.Y];
 
             for (int x = 0; x < size.X; ++x)
             {
@@ -124,7 +140,7 @@ namespace SpriteEditor.Services
                     int newIndex = x + y * size.X;
                     int sourceIndex = x + topLeft.X + (y + topLeft.Y) * Width;
 
-                    newPixels[newIndex] = Pixels[sourceIndex];
+                    newPixels[newIndex] = pixels[sourceIndex];
                 }
             }
 
@@ -133,9 +149,39 @@ namespace SpriteEditor.Services
 
         public ImageSource CreateSource(decimal zoom = 1)
         {
-            var writeableBitmap = new WriteableBitmap(Width, Height, (double)(96 / zoom), (double)(96 / zoom), PixelFormats.Bgra32, null);
-            writeableBitmap.WritePixels(new System.Windows.Int32Rect(0, 0, Width, Height), Pixels, 4 * Width, 0, 0);
+            var writeableBitmap = new WriteableBitmap(Width, Height, (double)(96 / zoom), (double)(96 / zoom), ToWinMedia(pixelFormat), null);
+            writeableBitmap.WritePixels(new System.Windows.Int32Rect(0, 0, Width, Height), pixels, GetSizeInBytes(pixelFormat) * Width, 0, 0);
             return writeableBitmap;
+        }
+
+        private static System.Windows.Media.PixelFormat ToWinMedia(PixelFormat pixelFormat)
+        {
+            return pixelFormat switch
+            {
+                PixelFormat.Argb32 => PixelFormats.Bgra32,
+                PixelFormat.Rgb24 => PixelFormats.Bgr24,
+                _ => throw new NotSupportedException(),
+            };
+        }
+
+        private static System.Drawing.Imaging.PixelFormat ToDrawingImaging(PixelFormat pixelFormat)
+        {
+            return pixelFormat switch
+            {
+                PixelFormat.Argb32 => System.Drawing.Imaging.PixelFormat.Format32bppArgb,
+                PixelFormat.Rgb24 => System.Drawing.Imaging.PixelFormat.Format24bppRgb,
+                _ => throw new NotSupportedException(),
+            };
+        }
+
+        public static int GetSizeInBytes(PixelFormat pixelFormat)
+        {
+            return pixelFormat switch
+            {
+                PixelFormat.Argb32 => 4,
+                PixelFormat.Rgb24 => 3,
+                _ => throw new NotSupportedException(),
+            };
         }
     }
 }

@@ -4,9 +4,20 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Dedumper"
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
+        xmlns:services="clr-namespace:SpriteEditor.Services;assembly=SpriteCommon"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800"
         d:DataContext="{d:DesignInstance Type=local:IMainVm}">
+    <Window.Resources>
+        <ObjectDataProvider x:Key="pixelFormats" MethodName="GetValues"
+                            ObjectType="{x:Type system:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="services:PixelFormat"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+    </Window.Resources>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -35,6 +46,7 @@
             <TextBox Text="{Binding Width, UpdateSourceTrigger=PropertyChanged}" />
             <Button Command="{Binding IncreaseWidth}">+</Button>
             <Button Command="{Binding DecreaseWidth}">-</Button>
+            <ComboBox ItemsSource="{Binding Source={StaticResource pixelFormats}}" SelectedItem="{Binding PixelFormat}" />
         </StackPanel>
     </Grid>
 </Window>

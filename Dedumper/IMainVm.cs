@@ -15,5 +15,7 @@ namespace Dedumper
         ICommand DecreaseWidth { get; }
 
         decimal Zoom { get; set; }
+
+        SpriteEditor.Services.PixelFormat PixelFormat { get; set; }
     }
 }
