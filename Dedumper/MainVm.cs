@@ -2,7 +2,6 @@
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SpriteEditor.Services;
-using SpriteEditor.ViewModels;
 using System;
 using System.IO;
 using System.Reactive.Disposables;
@@ -16,9 +15,11 @@ namespace Dedumper
     internal class MainVm : ReactiveObject, IMainVm
     {
         private readonly CompositeDisposable disposable = new();
+
         private readonly ObservableAsPropertyHelper<Image?> internalImageProperty;
         private readonly ObservableAsPropertyHelper<int> heightProperty;
         private readonly ObservableAsPropertyHelper<ImageSource?> imageProperty;
+
         private int width = 50;
 
         public MainVm()
@@ -35,7 +36,7 @@ namespace Dedumper
 
                         return CreateImage(content, offset, width, pixelFormat);
                     })
-                    .ToProperty(this, x => x.InternalImage, SpriteEditor.Services.Image.CreateDefault())
+                    .ToProperty(this, x => x.InternalImage)
                     .DisposeWith(disposable);
 
             heightProperty =
@@ -52,7 +53,7 @@ namespace Dedumper
 
                         return image?.CreateSource(zoom);
                     })
-                    .ToProperty(this, x => x.Image, ImageSourceEx.CreateDefault())
+                    .ToProperty(this, x => x.Image)
                     .DisposeWith(disposable);
 
             IncreaseWidth = ReactiveCommand.Create(() => Width += 1).DisposeWith(disposable);
