@@ -7,7 +7,7 @@ namespace Dedumper
     {
         ICommand OpenFile { get; }
 
-        ImageSource Image { get; }
+        ImageSource? Image { get; }
 
         int Width { get; set; }
 

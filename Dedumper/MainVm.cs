@@ -16,9 +16,9 @@ namespace Dedumper
     internal class MainVm : ReactiveObject, IMainVm
     {
         private readonly CompositeDisposable disposable = new();
-        private readonly ObservableAsPropertyHelper<Image> internalImageProperty;
+        private readonly ObservableAsPropertyHelper<Image?> internalImageProperty;
         private readonly ObservableAsPropertyHelper<int> heightProperty;
-        private readonly ObservableAsPropertyHelper<ImageSource> imageProperty;
+        private readonly ObservableAsPropertyHelper<ImageSource?> imageProperty;
         private int width = 50;
 
         public MainVm()
@@ -33,27 +33,15 @@ namespace Dedumper
                     {
                         var (content, offset, width, pixelFormat) = x;
 
-                        if (content == null)
-                        {
-                            return SpriteEditor.Services.Image.CreateDefault();
-                        }
-
-                        var pixelSizeInBytes = SpriteEditor.Services.Image.GetSizeInBytes(pixelFormat);
-                        var potentialPixelCount = content.Length / pixelSizeInBytes;
-                        var height = Math.Min(potentialPixelCount / width, 500);
-                        var offsetInBytes = offset * pixelSizeInBytes;
-                        var sizeInBytes = pixelSizeInBytes * width * height;
-                        var pixels = new byte[sizeInBytes];
-                        Buffer.BlockCopy(content, offsetInBytes, pixels, 0, sizeInBytes);
-                        return new Image(pixels, width, height, pixelFormat);
+                        return CreateImage(content, offset, width, pixelFormat);
                     })
                     .ToProperty(this, x => x.InternalImage, SpriteEditor.Services.Image.CreateDefault())
                     .DisposeWith(disposable);
 
             heightProperty =
                 this.WhenAnyValue(x => x.InternalImage)
-                    .Select(x => x.Height)
-                    .ToProperty(this, x => x.Height)
+                    .Select(x => x?.Height ?? 50)
+                    .ToProperty(this, x => x.Height, 50)
                     .DisposeWith(disposable);
 
             imageProperty =
@@ -61,13 +49,31 @@ namespace Dedumper
                     .Select(x =>
                     {
                         var (image, zoom) = x;
-                        return image.CreateSource(zoom);
+
+                        return image?.CreateSource(zoom);
                     })
                     .ToProperty(this, x => x.Image, ImageSourceEx.CreateDefault())
                     .DisposeWith(disposable);
 
             IncreaseWidth = ReactiveCommand.Create(() => Width += 1).DisposeWith(disposable);
             DecreaseWidth = ReactiveCommand.Create(() => Width -= 1).DisposeWith(disposable);
+        }
+
+        private static Image? CreateImage(byte[]? content, int offset, int width, SpriteEditor.Services.PixelFormat pixelFormat)
+        {
+            if (content == null)
+            {
+                return null;
+            }
+
+            var pixelSizeInBytes = SpriteEditor.Services.Image.GetSizeInBytes(pixelFormat);
+            var potentialPixelCount = content.Length / pixelSizeInBytes;
+            var height = Math.Min(potentialPixelCount / width, 500);
+            var offsetInBytes = offset * pixelSizeInBytes;
+            var sizeInBytes = pixelSizeInBytes * width * height;
+            var pixels = new byte[sizeInBytes];
+            Buffer.BlockCopy(content, offsetInBytes, pixels, 0, sizeInBytes);
+            return new Image(pixels, width, height, pixelFormat);
         }
 
         private async Task OpenFileHandler()
@@ -89,7 +95,7 @@ namespace Dedumper
         [Reactive]
         private byte[]? Content { get; set; }
 
-        public ImageSource Image => imageProperty.Value;
+        public ImageSource? Image => imageProperty.Value;
 
         public int Width
         {
@@ -110,7 +116,7 @@ namespace Dedumper
         [Reactive]
         public decimal Zoom { get; set; } = 1;
 
-        private Image InternalImage => internalImageProperty.Value;
+        private Image? InternalImage => internalImageProperty.Value;
 
         [Reactive]
         public SpriteEditor.Services.PixelFormat PixelFormat { get; set; }
