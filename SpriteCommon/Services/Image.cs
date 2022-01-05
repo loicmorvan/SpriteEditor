@@ -46,11 +46,11 @@ namespace SpriteEditor.Services
         public static Image CreateDefault()
         {
             return new Image(new byte[] {
-                0xFF, 0xFF, 0x00, 0x00,
-                0xFF, 0x00, 0xFF, 0x00,
-                0xFF, 0x00, 0x00, 0xFF,
-                0xFF, 0xFF, 0xFF, 0xFF
-            }, 2, 2);
+                0x00, 0x00, 0xFF,
+                0x00, 0xFF, 0x00,
+                0xFF, 0x00, 0x00,
+                0xFF, 0xFF, 0xFF,
+            }, 2, 2, PixelFormat.Rgb24);
         }
 
         public int Width { get; }
@@ -63,6 +63,7 @@ namespace SpriteEditor.Services
                 other != null &&
                 other.Width == Width &&
                 other.Height == Height &&
+                other.pixelFormat == pixelFormat &&
                 other.pixels.SequenceEqual(pixels);
         }
 
@@ -73,7 +74,7 @@ namespace SpriteEditor.Services
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Width, Height, pixels.GetHashCode());
+            return HashCode.Combine(Width, Height, pixels.GetHashCode(), pixelFormat);
         }
 
         public unsafe void Save(string path)
@@ -97,8 +98,6 @@ namespace SpriteEditor.Services
 
         public Image MovePixels(Vector displacement)
         {
-            throw new NotImplementedException();
-
             var newPixels = new byte[pixels.Length];
 
             for (int x = 0; x < Width; ++x)
@@ -108,7 +107,10 @@ namespace SpriteEditor.Services
                     int i = x + y * Width;
                     int i2 = Mod(x - displacement.X, Width) + Mod(y - displacement.Y, Height) * Width;
 
-                    newPixels[i] = pixels[i2];
+                    for (int b = 0; b < GetSizeInBytes(pixelFormat); ++b)
+                    {
+                        newPixels[i * GetSizeInBytes(pixelFormat) + b] = pixels[i2 * GetSizeInBytes(pixelFormat) + b];
+                    }
                 }
             }
 
@@ -129,8 +131,6 @@ namespace SpriteEditor.Services
 
         public Image Cut(Vector topLeft, Vector size)
         {
-            throw new NotImplementedException();
-
             var newPixels = new byte[size.X * size.Y];
 
             for (int x = 0; x < size.X; ++x)
@@ -140,7 +140,10 @@ namespace SpriteEditor.Services
                     int newIndex = x + y * size.X;
                     int sourceIndex = x + topLeft.X + (y + topLeft.Y) * Width;
 
-                    newPixels[newIndex] = pixels[sourceIndex];
+                    for (int b = 0; b < GetSizeInBytes(pixelFormat); ++b)
+                    {
+                        newPixels[newIndex * GetSizeInBytes(pixelFormat) + b] = pixels[sourceIndex * GetSizeInBytes(pixelFormat) + b];
+                    }
                 }
             }
 
@@ -160,7 +163,8 @@ namespace SpriteEditor.Services
             {
                 PixelFormat.Argb32 => PixelFormats.Bgra32,
                 PixelFormat.Rgb24 => PixelFormats.Bgr24,
-                _ => throw new NotSupportedException(),
+                PixelFormat.Bgr24 => PixelFormats.Rgb24,
+                _ => throw new NotImplementedException(),
             };
         }
 
@@ -170,7 +174,8 @@ namespace SpriteEditor.Services
             {
                 PixelFormat.Argb32 => System.Drawing.Imaging.PixelFormat.Format32bppArgb,
                 PixelFormat.Rgb24 => System.Drawing.Imaging.PixelFormat.Format24bppRgb,
-                _ => throw new NotSupportedException(),
+                PixelFormat.Bgr24 => throw new NotSupportedException(),
+                _ => throw new NotImplementedException(),
             };
         }
 
@@ -180,7 +185,8 @@ namespace SpriteEditor.Services
             {
                 PixelFormat.Argb32 => 4,
                 PixelFormat.Rgb24 => 3,
-                _ => throw new NotSupportedException(),
+                PixelFormat.Bgr24 => 3,
+                _ => throw new NotImplementedException(),
             };
         }
     }

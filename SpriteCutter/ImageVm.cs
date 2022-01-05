@@ -21,7 +21,7 @@ namespace SpriteCutter
         public ImageVm(string? safeFileName = null)
         {
             InternalImage = safeFileName == null
-                ? new Image(new uint[] { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF }, 2, 2)
+                ? new Image(Enumerable.Repeat((byte)0XFF, 16).ToArray(), 2, 2)
                 : new Image(safeFileName);
 
             sourceProperty = this

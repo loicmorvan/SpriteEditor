@@ -13,33 +13,33 @@ public class ImageTests
         {
             yield return new object[]
             {
-                new Image(new uint[] { 0, 1, 2, 3 }, 2, 2),
+                new Image(new byte[] { 0, 1, 2, 3 }, 2, 2),
                 -2,
-                new Image(new uint[] { 0, 1, 2, 3 }, 2, 2),
+                new Image(new byte[] { 0, 1, 2, 3 }, 2, 2),
             };
             yield return new object[]
             {
-                new Image(new uint[] { 0, 1, 2, 3 }, 2, 2),
+                new Image(new byte[] { 0, 1, 2, 3 }, 2, 2),
                 -1,
-                new Image(new uint[] { 1, 0, 3, 2 }, 2, 2),
+                new Image(new byte[] { 1, 0, 3, 2 }, 2, 2),
             };
             yield return new object[]
             {
-                new Image(new uint[] { 0, 1, 2, 3 }, 2, 2),
+                new Image(new byte[] { 0, 1, 2, 3 }, 2, 2),
                 0,
-                new Image(new uint[] { 0, 1, 2, 3 }, 2, 2),
+                new Image(new byte[] { 0, 1, 2, 3 }, 2, 2),
             };
             yield return new object[]
             {
-                new Image(new uint[] { 0, 1, 2, 3 }, 2, 2),
+                new Image(new byte[] { 0, 1, 2, 3 }, 2, 2),
                 1,
-                new Image(new uint[] { 1, 0, 3, 2 }, 2, 2),
+                new Image(new byte[] { 1, 0, 3, 2 }, 2, 2),
             };
             yield return new object[]
             {
-                new Image(new uint[] { 0, 1, 2, 3 }, 2, 2),
+                new Image(new byte[] { 0, 1, 2, 3 }, 2, 2),
                 2,
-                new Image(new uint[] { 0, 1, 2, 3 }, 2, 2),
+                new Image(new byte[] { 0, 1, 2, 3 }, 2, 2),
             };
         }
     }
@@ -60,7 +60,7 @@ public class ImageTests
         var height = 60;
         var columns = 2;
         var rows = 2;
-        var sut = new Image(Enumerable.Range(0, width * height).Select(x => (uint)x).ToArray(), width, height);
+        var sut = new Image(Enumerable.Range(0, width * height).Select(x => (byte)x).ToArray(), width, height);
 
         var result = sut.Split(columns, rows);
 
@@ -77,9 +77,9 @@ public class ImageTests
         Assert.Equal(expected, result);
     }
 
-    private static uint[] GeneratePixels(uint start, int width, int height, uint lineStride)
+    private static byte[] GeneratePixels(byte start, int width, int height, uint lineStride)
     {
-        var result = new uint[width * height];
+        var result = new byte[4 * width * height];
         for (int y = 0; y < height; y++)
         {
             var lineStart = start + (uint)y * lineStride;

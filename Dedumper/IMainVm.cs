@@ -11,6 +11,10 @@ namespace Dedumper
 
         int Width { get; set; }
 
+        int Height { get; }
+
+        int Offset { get; set; }
+
         ICommand IncreaseWidth { get; }
         ICommand DecreaseWidth { get; }
 

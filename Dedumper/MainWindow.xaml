@@ -39,11 +39,11 @@
                 <MenuItem Header="About" />
             </MenuItem>
         </Menu>
-        <ScrollViewer Grid.Row="1">
-            <Image Source="{Binding Image}" RenderOptions.BitmapScalingMode="NearestNeighbor" />
-        </ScrollViewer>
+        <Image Grid.Row="1" Source="{Binding Image}" RenderOptions.BitmapScalingMode="NearestNeighbor" />
         <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Vertical">
+            <TextBox Text="{Binding Offset}" />
             <TextBox Text="{Binding Width, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBlock Text="{Binding Height}" />
             <Button Command="{Binding IncreaseWidth}">+</Button>
             <Button Command="{Binding DecreaseWidth}">-</Button>
             <ComboBox ItemsSource="{Binding Source={StaticResource pixelFormats}}" SelectedItem="{Binding PixelFormat}" />

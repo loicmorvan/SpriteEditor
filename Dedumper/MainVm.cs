@@ -17,6 +17,7 @@ namespace Dedumper
     {
         private readonly CompositeDisposable disposable = new();
         private readonly ObservableAsPropertyHelper<Image> internalImageProperty;
+        private readonly ObservableAsPropertyHelper<int> heightProperty;
         private readonly ObservableAsPropertyHelper<ImageSource> imageProperty;
         private int width = 50;
 
@@ -27,10 +28,10 @@ namespace Dedumper
                 .DisposeWith(disposable);
 
             internalImageProperty =
-                this.WhenAnyValue(x => x.Content, x => x.Width, x => x.PixelFormat)
+                this.WhenAnyValue(x => x.Content, x => x.Offset, x => x.Width, x => x.PixelFormat)
                     .Select(x =>
                     {
-                        var (content, width, pixelFormat) = x;
+                        var (content, offset, width, pixelFormat) = x;
 
                         if (content == null)
                         {
@@ -40,12 +41,19 @@ namespace Dedumper
                         var pixelSizeInBytes = SpriteEditor.Services.Image.GetSizeInBytes(pixelFormat);
                         var potentialPixelCount = content.Length / pixelSizeInBytes;
                         var height = Math.Min(potentialPixelCount / width, 500);
+                        var offsetInBytes = offset * pixelSizeInBytes;
                         var sizeInBytes = pixelSizeInBytes * width * height;
                         var pixels = new byte[sizeInBytes];
-                        Buffer.BlockCopy(content, 0, pixels, 0, sizeInBytes);
+                        Buffer.BlockCopy(content, offsetInBytes, pixels, 0, sizeInBytes);
                         return new Image(pixels, width, height, pixelFormat);
                     })
                     .ToProperty(this, x => x.InternalImage, SpriteEditor.Services.Image.CreateDefault())
+                    .DisposeWith(disposable);
+
+            heightProperty =
+                this.WhenAnyValue(x => x.InternalImage)
+                    .Select(x => x.Height)
+                    .ToProperty(this, x => x.Height)
                     .DisposeWith(disposable);
 
             imageProperty =
@@ -106,5 +114,10 @@ namespace Dedumper
 
         [Reactive]
         public SpriteEditor.Services.PixelFormat PixelFormat { get; set; }
+
+        [Reactive]
+        public int Offset { get; set; }
+
+        public int Height => heightProperty.Value;
     }
 }
