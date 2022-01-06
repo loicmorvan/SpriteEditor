@@ -34,7 +34,7 @@ namespace Dedumper
                     {
                         var (content, offset, width, pixelFormat) = x;
 
-                        return CreateImage(content, offset, width, pixelFormat);
+                        return CreateImage(content, offset, width, pixelFormat.ToImageFormat());
                     })
                     .ToProperty(this, x => x.InternalImage)
                     .DisposeWith(disposable);
@@ -79,7 +79,7 @@ namespace Dedumper
                 return null;
             }
 
-            var pixelSizeInBytes = pixelFormat.GetSizeInBytes();
+            var pixelSizeInBytes = pixelFormat.SizeInBytes;
             var potentialPixelCount = content.Length / pixelSizeInBytes;
             var height = Math.Min(potentialPixelCount / width, 500);
             var offsetInBytes = offset * pixelSizeInBytes;
@@ -132,7 +132,7 @@ namespace Dedumper
         private Image? InternalImage => internalImageProperty.Value;
 
         [Reactive]
-        public SpriteEditor.Services.PixelFormat PixelFormat { get; set; }
+        public PixelFormat PixelFormat { get; set; }
 
         [Reactive]
         public int Offset { get; set; }

@@ -5,7 +5,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Dedumper"
         xmlns:system="clr-namespace:System;assembly=mscorlib"
-        xmlns:services="clr-namespace:SpriteEditor.Services;assembly=SpriteCommon"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800"
         d:DataContext="{d:DesignInstance Type=local:IMainVm}">
@@ -13,7 +12,7 @@
         <ObjectDataProvider x:Key="pixelFormats" MethodName="GetValues"
                             ObjectType="{x:Type system:Enum}">
             <ObjectDataProvider.MethodParameters>
-                <x:Type TypeName="services:PixelFormat"/>
+                <x:Type TypeName="local:PixelFormat"/>
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
     </Window.Resources>
