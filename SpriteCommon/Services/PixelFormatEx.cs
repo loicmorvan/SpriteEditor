@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Windows.Media;
 
 namespace SpriteEditor.Services
 {
@@ -23,8 +22,10 @@ namespace SpriteEditor.Services
             {
                 PixelFormat.Argb8888 => 4,
                 PixelFormat.Rgb888 => 3,
+                PixelFormat.Rgb565 => 2,
                 PixelFormat.Bgr888 => 3,
                 PixelFormat.Argb4444 => 2,
+                PixelFormat.ExperimentalAlpha16 => 2,
                 _ => throw new NotImplementedException(),
             };
         }

@@ -158,31 +158,76 @@ namespace SpriteEditor.Services
                 PixelFormat.Argb4444 => PixelFormats.Bgra32,
                 PixelFormat.Rgb888 => PixelFormats.Bgr24,
                 PixelFormat.Bgr888 => PixelFormats.Rgb24,
+                PixelFormat.Rgb565 => PixelFormats.Rgb24,
+                PixelFormat.ExperimentalAlpha16 => PixelFormats.Bgra32,
                 _ => throw new NotImplementedException(),
             };
 
             var writeableBitmap = new WriteableBitmap(Width, Height, (double)(96 / zoom), (double)(96 / zoom), candidateFormat, null);
 
             var pixels = this.pixels;
-            if (pixelFormat == PixelFormat.Argb4444)
+            switch (pixelFormat)
             {
-                var realPixelCount = pixels.Length / 2;
-                var newPixels = new byte[4 * realPixelCount];
-                for (int i = 0; i < realPixelCount; i++)
-                {
-                    var r = (byte)(0xF0 & (pixels[2 * i + 0] << 4));
-                    var g = (byte)(0xF0 & pixels[2 * i + 0]);
-                    var b = (byte)(0xF0 & (pixels[2 * i + 1] << 4));
-                    var a = (byte)(0xF0 & pixels[2 * i + 1]);
+                case PixelFormat.Argb4444:
+                    {
+                        var realPixelCount = pixels.Length / 2;
+                        var newPixels = new byte[4 * realPixelCount];
+                        for (int i = 0; i < realPixelCount; i++)
+                        {
+                            var r = (byte)(0xF0 & pixels[2 * i + 0] << 4);
+                            var g = (byte)(0xF0 & pixels[2 * i + 0]);
+                            var b = (byte)(0xF0 & pixels[2 * i + 1] << 4);
+                            var a = (byte)(0xF0 & pixels[2 * i + 1]);
 
-                    // TODO: Not sure.
-                    newPixels[4 * i + 0] = r;
-                    newPixels[4 * i + 1] = g;
-                    newPixels[4 * i + 2] = b;
-                    newPixels[4 * i + 3] = a;
-                }
+                            // TODO: Not sure.
+                            newPixels[4 * i + 0] = r;
+                            newPixels[4 * i + 1] = g;
+                            newPixels[4 * i + 2] = b;
+                            newPixels[4 * i + 3] = a;
+                        }
 
-                pixels = newPixels;
+                        pixels = newPixels;
+                        break;
+                    }
+
+                case PixelFormat.Rgb565:
+                    {
+                        var realPixelCount = pixels.Length / 2;
+                        var newPixels = new byte[3 * realPixelCount];
+                        for (int i = 0; i < realPixelCount; ++i)
+                        {
+                            var c1 = pixels[2 * i + 0];
+                            var c2 = pixels[2 * i + 1];
+                            var r = (c1 & 0b_0001_1111) << 3;
+                            var g = ((c1 & 0b_1110_0000) >> 5) + ((c2 & 0b_0000_0111) << 3) << 2;
+                            var b = (c2 & 0b_1111_1000) << 3;
+
+                            newPixels[3 * i + 0] = (byte)r;
+                            newPixels[3 * i + 1] = (byte)g;
+                            newPixels[3 * i + 2] = (byte)b;
+                        }
+
+                        pixels = newPixels;
+                        break;
+                    }
+
+                case PixelFormat.ExperimentalAlpha16:
+                    {
+                        var realPixelCount = pixels.Length / 2;
+                        var newPixels = new byte[4 * realPixelCount];
+                        for (int i = 0; i < realPixelCount; i++)
+                        {
+                            var a = (byte)(0b_1110_0000 & pixels[2 * i + 1]);
+
+                            newPixels[4 * i + 0] = a;
+                            newPixels[4 * i + 1] = a;
+                            newPixels[4 * i + 2] = a;
+                            newPixels[4 * i + 3] = 255;
+                        }
+
+                        pixels = newPixels;
+                        break;
+                    }
             }
 
             var sizeInBytes = pixelFormat switch
@@ -190,7 +235,9 @@ namespace SpriteEditor.Services
                 PixelFormat.Argb8888 => 4,
                 PixelFormat.Rgb888 => 3,
                 PixelFormat.Bgr888 => 3,
+                PixelFormat.Rgb565 => 3,
                 PixelFormat.Argb4444 => 4,
+                PixelFormat.ExperimentalAlpha16 => 4,
                 _ => throw new NotImplementedException(),
             };
 

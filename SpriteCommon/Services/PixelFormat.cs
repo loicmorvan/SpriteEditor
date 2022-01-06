@@ -7,5 +7,6 @@
         Rgb565,
         Bgr888,
         Argb4444,
+        ExperimentalAlpha16,
     }
 }
